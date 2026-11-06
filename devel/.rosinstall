@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/roboticsgroup1/unitree_ws/devel/setup.sh
