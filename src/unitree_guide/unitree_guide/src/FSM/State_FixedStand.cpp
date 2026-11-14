@@ -47,6 +47,11 @@ FSMStateName State_FixedStand::checkChange(){
     else if(_lowState->userCmd == UserCommand::START){
         return FSMStateName::TROTTING;
     }
+#ifdef COMPILE_WITH_SIMULATION
+    else if(_lowState->userCmd == UserCommand::CANTER){
+        return FSMStateName::CANTER;
+    }
+#endif
     else if(_lowState->userCmd == UserCommand::L1_X){
         return FSMStateName::BALANCETEST;
     }

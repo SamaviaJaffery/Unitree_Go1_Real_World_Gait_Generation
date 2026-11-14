@@ -37,6 +37,9 @@ public:
     Vec34 getFeetVel();
     Vec34 getPosFeet2BGlobal();
     void run();
+#ifdef COMPILE_WITH_SIMULATION
+    void setSimulationDt(double dt);
+#endif
 
 #ifdef COMPILE_DEBUG
     void setPyPlot(PyPlot *plot){_testPlot = plot;}
