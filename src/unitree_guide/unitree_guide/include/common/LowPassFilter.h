@@ -11,6 +11,9 @@ public:
     void addValue(double newValue);
     double getValue();
     void clear();
+    void setSamplePeriod(double period, double frequency = 3.0) {
+        _weight = 1.0 / (1.0 + 1.0 / (6.283185307179586 * period * frequency));
+    }
 private:
     double _weight;
     double _pastValue;

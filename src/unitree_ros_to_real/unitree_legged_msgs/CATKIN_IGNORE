@@ -1,0 +1,2 @@
+# Use the identical message package at src/unitree_legged_msgs.
+# Catkin must discover only one package named unitree_legged_msgs.

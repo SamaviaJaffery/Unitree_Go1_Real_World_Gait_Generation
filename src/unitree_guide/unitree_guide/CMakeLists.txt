@@ -68,6 +68,7 @@ if(CATKIN_MAKE)
         tf
         geometry_msgs
         unitree_legged_msgs
+        urdf
     )
     catkin_package(
         CATKIN_DEPENDS 
@@ -82,7 +83,7 @@ include_directories(
     ${GAZEBO_INCLUDE_DIRS}
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 if(REAL_ROBOT)
     add_definitions(-DCOMPILE_WITH_REAL_ROBOT)
@@ -118,8 +119,15 @@ file(GLOB_RECURSE SRC_LIST
     "src/*/*.cpp"
     "src/*/*.cc"
 )
+# Keep the saved original out of the executable (it defines the same class).
+list(FILTER SRC_LIST EXCLUDE REGEX "/State_Trotting_or\\.cpp$")
 
 add_executable(junior_ctrl src/main.cpp ${SRC_LIST})
+target_compile_options(junior_ctrl PRIVATE
+    "$<$<CONFIG:Debug>:-O0>"
+    "$<$<CONFIG:Debug>:-g3>"
+    "$<$<CONFIG:Debug>:-fno-omit-frame-pointer>"
+)
 if(CATKIN_MAKE)
     target_link_libraries(junior_ctrl ${catkin_LIBRARIES})
     add_dependencies(junior_ctrl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

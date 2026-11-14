@@ -121,6 +121,19 @@ void Estimator::_initSystem(){
     #endif  // COMPILE_WITH_MOVE_BASE
 }
 
+#ifdef COMPILE_WITH_SIMULATION
+void Estimator::setSimulationDt(double dt) {
+    if (!std::isfinite(dt) || dt <= 0 || dt > .05) return;
+    Eigen::Matrix<double,18,18> process = _QInit - _B * _Cu * _B.transpose();
+    process *= dt / _dt;
+    _dt = dt;
+    _A.block<3,3>(0,3) = Mat3::Identity() * dt;
+    _B.block<3,3>(3,0) = Mat3::Identity() * dt;
+    _QInit = process + _B * _Cu * _B.transpose();
+    _vxFilter->setSamplePeriod(dt); _vyFilter->setSamplePeriod(dt); _vzFilter->setSamplePeriod(dt);
+}
+#endif
+
 void Estimator::run(){
     _feetH.setZero();
     _feetPosGlobalKine = _robModel->getFeet2BPositions(*_lowState, FrameType::GLOBAL);
