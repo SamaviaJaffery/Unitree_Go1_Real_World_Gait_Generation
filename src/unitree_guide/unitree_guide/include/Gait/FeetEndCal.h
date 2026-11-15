@@ -10,6 +10,8 @@
 class FeetEndCal{
 public:
     FeetEndCal(CtrlComponents *ctrlComp);
+    // Use explicit timing without changing the shared generator.
+    FeetEndCal(CtrlComponents *ctrlComp, WaveGenerator *waveGen);
     ~FeetEndCal();
     Vec3 calFootPos(int legID, Vec2 vxyGoalGlobal, float dYawGoal, float phase);
 private:

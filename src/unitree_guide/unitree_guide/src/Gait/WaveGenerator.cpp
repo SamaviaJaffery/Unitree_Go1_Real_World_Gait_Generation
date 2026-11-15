@@ -102,20 +102,7 @@ void WaveGenerator::calcWave(Vec4 &phase, VecInt4 &contact, WaveStatus status)
     if (status == WaveStatus::WAVE_ALL)
     {
         _passT = (double)(getSystemTime() - _startT) * 1e-6;
-        for (int i(0); i < 4; ++i)
-        {
-            _normalT(i) = fmod(_passT + _period - _period * _bias(i), _period) / _period;
-            if (_normalT(i) < _stRatio)
-            {
-                contact(i) = 1;
-                phase(i) = _normalT(i) / _stRatio;
-            }
-            else
-            {
-                contact(i) = 0;
-                phase(i) = (_normalT(i) - _stRatio) / (1 - _stRatio);
-            }
-        }
+        sampleContactPhase(_passT, _period, _stRatio, _bias, phase, contact);
     }
     else if (status == WaveStatus::SWING_ALL)
     {
@@ -126,5 +113,22 @@ void WaveGenerator::calcWave(Vec4 &phase, VecInt4 &contact, WaveStatus status)
     {
         contact.setOnes();
         phase << 0.5, 0.5, 0.5, 0.5;
+    }
+}
+
+//for canter
+void WaveGenerator::sampleContactPhase(double elapsed, double period, double stanceRatio,
+                                      const Vec4 &bias, Vec4 &phase, VecInt4 &contact,
+                                      bool startup)
+{
+    for (int i = 0; i < 4; ++i) {
+                const double cycle = fmod(elapsed + period - period * bias(i), period) / period;
+        contact(i) = cycle < stanceRatio;
+        phase(i) = contact(i) ? cycle / stanceRatio : (cycle - stanceRatio) / (1 - stanceRatio);
+        
+        // Before the first biased touchdown, a startup swing begins at phase zero.
+        const double firstTouchdown = bias(i) * period;
+        if (startup && elapsed < firstTouchdown)
+            phase(i) = elapsed / firstTouchdown;
     }
 }

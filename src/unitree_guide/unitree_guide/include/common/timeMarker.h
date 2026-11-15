@@ -31,8 +31,8 @@ inline double getTimeSecond(){
 inline void absoluteWait(long long startTime, long long waitTime,
                          const bool *running = nullptr){
     if(getSystemTime() - startTime > waitTime){
-        //std::cout << "[WARNING] The waitTime=" << waitTime << " of function absoluteWait is not enough!" << std::endl
-        //<< "The program has already cost " << getSystemTime() - startTime << "us." << std::endl;
+        // std::cout << "[WARNING] The waitTime=" << waitTime << " of function absoluteWait is not enough!" << std::endl
+        // << "The program has already cost " << getSystemTime() - startTime << "us." << std::endl;
     }
     while(getSystemTime() - startTime < waitTime){
 #ifdef COMPILE_WITH_SIMULATION

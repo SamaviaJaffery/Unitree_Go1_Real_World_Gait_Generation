@@ -4,10 +4,13 @@
 #include "Gait/GaitGenerator.h"
 
 GaitGenerator::GaitGenerator(CtrlComponents *ctrlComp)
-              : _waveG(ctrlComp->waveGen), _est(ctrlComp->estimator), 
+              : GaitGenerator(ctrlComp, ctrlComp->waveGen){}
+
+GaitGenerator::GaitGenerator(CtrlComponents *ctrlComp, WaveGenerator *waveGen)
+              : _waveG(waveGen), _est(ctrlComp->estimator),
                 _phase(ctrlComp->phase), _contact(ctrlComp->contact), 
                 _robModel(ctrlComp->robotModel), _state(ctrlComp->lowState){
-    _feetCal = new FeetEndCal(ctrlComp);
+    _feetCal = new FeetEndCal(ctrlComp, _waveG);
     _firstRun = true;
 }
 

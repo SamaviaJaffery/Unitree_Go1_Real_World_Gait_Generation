@@ -15,6 +15,8 @@
 class GaitGenerator{
 public:
     GaitGenerator(CtrlComponents *ctrlComp);
+    // Optional per-instance timing; the original constructor uses ctrlComp->waveGen.
+    GaitGenerator(CtrlComponents *ctrlComp, WaveGenerator *waveGen);
     ~GaitGenerator();
     void setGait(Vec2 vxyGoalGlobal, float dYawGoal, float gaitHeight);
     void run(Vec34 &feetPos, Vec34 &feetVel);

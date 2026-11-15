@@ -19,6 +19,8 @@ bool ContactForceOptimizer::allocate(const Vec34 &feetFromCom, const VecInt4 &co
     if (n == 0) {
         _previous.setZero();
     } else {
+        // Minimize 1/2*||A*f-w*||_S^2 + .001*||f||^2 - .001*f_prev^T*f.
+        // Constraints below enforce contact zeros, friction and actuator limits.
         Mat12 H = A.transpose() * weights.asDiagonal() * A + .002 * Mat12::Identity();
         Vec12 g = -A.transpose() * weights.asDiagonal() * requested - .001 * _previous;
         quadprogpp::Matrix<double> G(12, 12), CE(12, 3 * (4 - n)), CI(12, 16 * n);
