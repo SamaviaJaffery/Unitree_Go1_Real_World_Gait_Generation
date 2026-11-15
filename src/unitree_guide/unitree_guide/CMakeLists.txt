@@ -119,8 +119,6 @@ file(GLOB_RECURSE SRC_LIST
     "src/*/*.cpp"
     "src/*/*.cc"
 )
-# Keep the saved original out of the executable (it defines the same class).
-list(FILTER SRC_LIST EXCLUDE REGEX "/State_Trotting_or\\.cpp$")
 
 add_executable(junior_ctrl src/main.cpp ${SRC_LIST})
 target_compile_options(junior_ctrl PRIVATE

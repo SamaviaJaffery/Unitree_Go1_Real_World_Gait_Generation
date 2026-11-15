@@ -4,10 +4,13 @@
 #include "Gait/FeetEndCal.h"
 
 FeetEndCal::FeetEndCal(CtrlComponents *ctrlComp)
+           : FeetEndCal(ctrlComp, ctrlComp->waveGen){}
+
+FeetEndCal::FeetEndCal(CtrlComponents *ctrlComp, WaveGenerator *waveGen)
            : _est(ctrlComp->estimator), _lowState(ctrlComp->lowState),
              _robModel(ctrlComp->robotModel){
-    _Tstance  = ctrlComp->waveGen->getTstance();
-    _Tswing   = ctrlComp->waveGen->getTswing();
+    _Tstance  = waveGen->getTstance();
+    _Tswing   = waveGen->getTswing();
 
     _kx = 0.005;
     _ky = 0.005;
