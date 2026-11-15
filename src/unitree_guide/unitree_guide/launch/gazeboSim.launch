@@ -55,4 +55,7 @@
         <arg name="rname" value="$(arg rname)"/>
     </include>
 
+    <!-- create rqt graph on launch to visualize important topics that waits about ten seconds for the nodes to initialize -->
+    <node pkg="rqt_plot" type="rqt_plot" name="Contact_Graph" respawn="false" output="screen" launch-prefix="bash -c 'sleep 10; $0 $@'" args="/contact/FR_foot_contact/state/data /contact/FL_foot_contact/state/data /contact/RR_foot_contact/state/data /contact/RL_foot_contact/state/data"/>
+
 </launch>

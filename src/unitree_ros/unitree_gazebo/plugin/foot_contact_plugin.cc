@@ -10,6 +10,7 @@ Use of this source code is governed by the MPL-2.0 license, see LICENSE.
 #include <gazebo/gazebo.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <geometry_msgs/WrenchStamped.h>
+#include <std_msgs/Float64.h>
 
 namespace gazebo
 {
@@ -30,6 +31,8 @@ namespace gazebo
             this->rosnode = new ros::NodeHandle(this->contact_namespace);
             // add "visual" is for the same name of draw node
             this->force_pub = this->rosnode->advertise<geometry_msgs::WrenchStamped>("/visual/"+_sensor->Name()+"/the_force", 100);
+            // add publisher for contact state to read 
+            this->contact_pub = this->rosnode->advertise<std_msgs::Float64>("/contact/" + _sensor->Name() + "/state", 10);
             // Connect to the sensor update event.
             this->update_connection = this->parentSensor->ConnectUpdated(std::bind(&UnitreeFootContactPlugin::OnUpdate, this));
             this->parentSensor->SetActive(true); // Make sure the parent sensor is active.
@@ -46,6 +49,16 @@ namespace gazebo
             msgs::Contacts contacts;
             contacts = this->parentSensor->Contacts();
             count = contacts.contact_size();
+            // Publising each leg contact state, by default 1 means contact and 0 means no contact
+            std_msgs::Float64 contact_state;
+            if(count > 0){
+                contact_state.data = 1.0;
+            }
+            else{
+                contact_state.data = 0.0;
+            }
+            this->contact_pub.publish(contact_state);
+
             // std::cout << count <<"\n";
             for (unsigned int i = 0; i < count; ++i){
                 if(contacts.contact(i).position_size() != 1){
@@ -75,12 +88,14 @@ namespace gazebo
                 force.wrench.force.y = 0;
                 force.wrench.force.z = 0;
             }
+            force.header.stamp = ros::Time::now();
             this->force_pub.publish(force);
         }
 
         private:
             ros::NodeHandle* rosnode;
             ros::Publisher force_pub;
+            ros::Publisher contact_pub;
             event::ConnectionPtr update_connection;
             std::string contact_namespace;
             sensors::ContactSensorPtr parentSensor;      
