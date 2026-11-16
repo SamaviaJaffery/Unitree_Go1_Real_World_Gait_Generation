@@ -11,6 +11,7 @@
 #include "FSM/State_FreeStand.h"
 #include "FSM/State_Trotting.h"
 #include "FSM/State_Canter.h"
+#include "FSM/State_Gallop.h"
 #include "FSM/State_BalanceTest.h"
 #include "FSM/State_SwingTest.h"
 #include "FSM/State_StepTest.h"
@@ -30,6 +31,7 @@ struct FSMStateList{
     State_BalanceTest *balanceTest;
     State_SwingTest *swingTest;
     State_StepTest *stepTest;
+    State_Gallop *gallop;
 #ifdef COMPILE_WITH_MOVE_BASE
     State_move_base *moveBase;
 #endif  // COMPILE_WITH_MOVE_BASE
@@ -44,6 +46,7 @@ struct FSMStateList{
         delete balanceTest;
         delete swingTest;
         delete stepTest;
+        delete gallop;
 #ifdef COMPILE_WITH_MOVE_BASE
         delete moveBase;
 #endif  // COMPILE_WITH_MOVE_BASE

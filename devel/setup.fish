@@ -18,7 +18,7 @@ if not type -q bass
 end
 
 if test -z $_CATKIN_SETUP_DIR
-    set _CATKIN_SETUP_DIR /home/roboticsgroup1/unitree_ws/devel
+    set _CATKIN_SETUP_DIR /home/roboticsgroup1/Unitree_Go1_Real_World_Gait_Generation/devel
 end
 
 set _SETUP_UTIL "$_CATKIN_SETUP_DIR/_setup_util.py"

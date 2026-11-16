@@ -30,7 +30,8 @@ enum class UserCommand{
     L1_X,       // balanceTest
     L1_A,       // swingTest
     L1_Y,       // stepTest
-    CANTER      // keyboard: 6
+    CANTER,      // keyboard: 6
+    GALLOP   // keyboard: 7
 };
 
 enum class FrameType{
@@ -63,7 +64,8 @@ enum class FSMStateName{
     BALANCETEST,
     SWINGTEST,
     STEPTEST,
-    CANTER
+    CANTER,
+    GALLOP
 };
 
 #endif  // ENUMCLASS_H

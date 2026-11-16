@@ -5,7 +5,7 @@
 # or fall back to the destination set at configure time
 
 if test -z $_CATKIN_SETUP_DIR
-    set _CATKIN_SETUP_DIR /home/roboticsgroup1/unitree_ws/devel
+    set _CATKIN_SETUP_DIR /home/roboticsgroup1/Unitree_Go1_Real_World_Gait_Generation/devel
 end
 
 set CATKIN_SETUP_UTIL_ARGS "--extend --local"
