@@ -51,6 +51,9 @@ FSMStateName State_FixedStand::checkChange(){
     else if(_lowState->userCmd == UserCommand::CANTER){
         return FSMStateName::CANTER;
     }
+    else if(_lowState->userCmd == UserCommand::GALLOP){
+        return FSMStateName::GALLOP;
+    }
 #endif
     else if(_lowState->userCmd == UserCommand::L1_X){
         return FSMStateName::BALANCETEST;

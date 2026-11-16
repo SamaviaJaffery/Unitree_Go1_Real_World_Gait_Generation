@@ -34,6 +34,8 @@ UserCommand KeyBoard::checkCmd(){
         return UserCommand::START;
     case '6':
         return UserCommand::CANTER;
+    case '7':
+        return UserCommand::GALLOP;
 #ifdef COMPILE_WITH_MOVE_BASE
     case '5':
         return UserCommand::L2_Y;

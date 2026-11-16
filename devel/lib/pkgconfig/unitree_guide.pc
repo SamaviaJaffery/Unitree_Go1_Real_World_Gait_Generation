@@ -1,4 +1,4 @@
-prefix=/home/roboticsgroup1/unitree_ws/devel
+prefix=/home/roboticsgroup1/Unitree_Go1_Real_World_Gait_Generation/devel
 
 Name: unitree_guide
 Description: Description of unitree_guide

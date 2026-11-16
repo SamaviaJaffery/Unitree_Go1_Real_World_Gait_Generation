@@ -13,6 +13,7 @@ FSM::FSM(CtrlComponents *ctrlComp)
     _stateList.freeStand = new State_FreeStand(_ctrlComp);
     _stateList.trotting = new State_Trotting(_ctrlComp);
     _stateList.canter = new State_Canter(_ctrlComp);
+    _stateList.gallop = new State_Gallop(_ctrlComp);
     _stateList.balanceTest = new State_BalanceTest(_ctrlComp);
     _stateList.swingTest = new State_SwingTest(_ctrlComp);
     _stateList.stepTest = new State_StepTest(_ctrlComp);
@@ -37,11 +38,28 @@ void FSM::run(){
     _startTime = getSystemTime();
     _ctrlComp->sendRecv();
 #ifdef COMPILE_WITH_SIMULATION
-    if (_currentState->_stateName == FSMStateName::CANTER) {
-        _stateList.canter->updateCanterWave();
-    } else
-#endif
+
+if (_currentState->_stateName == FSMStateName::CANTER) {
+
+    _stateList.canter->updateCanterWave();
+
+}
+else if (_currentState->_stateName == FSMStateName::GALLOP) {
+
+    _stateList.gallop->updateGallopWave();
+
+}
+else {
+
     _ctrlComp->runWaveGen();
+
+}
+
+#else
+
+_ctrlComp->runWaveGen();
+
+#endif
     _ctrlComp->estimator->run();
     if(!checkSafty()){
         _ctrlComp->ioInter->setPassive();
@@ -85,6 +103,9 @@ FSMState* FSM::getNextState(FSMStateName stateName){
         break;
     case FSMStateName::TROTTING:
         return _stateList.trotting;
+        break;
+    case FSMStateName::GALLOP:
+        return _stateList.gallop;
         break;
     case FSMStateName::CANTER:
         return _stateList.canter;
