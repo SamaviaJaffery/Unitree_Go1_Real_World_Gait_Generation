@@ -27,7 +27,7 @@ sudo apt install build-essential cmake git libeigen3-dev liblcm-dev libboost-all
   python3-rosdep ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control \
   ros-noetic-ros-control ros-noetic-ros-controllers \
   ros-noetic-robot-state-publisher ros-noetic-joint-state-publisher \
-  ros-noetic-xacro ros-noetic-rviz
+  ros-noetic-xacro ros-noetic-rviz ros-noetic-rqt-plot
 ```
 
 If you have not initialized rosdep on this machine, run `sudo rosdep init` once. Then run `rosdep update` as your normal user.
@@ -64,6 +64,8 @@ source devel/setup.bash
 
 Use your actual workspace path if it differs from `~/unitree_ws`. Do not reuse another machine's `build/` or `devel/` outputs; rebuild from source. Avoid compiling while Gazebo is running on a memory-constrained VM.
 
+After pulling or rebasing controller or Gazebo-plugin changes, stop the running simulation, repeat the full workspace build above, and restart both Gazebo and `junior_ctrl`. Building only `unitree_guide` does not rebuild the foot-contact plugin in `unitree_gazebo`.
+
 ## Run the simulation
 
 ### Terminal 1: Gazebo
@@ -75,9 +77,9 @@ source devel/setup.bash
 roslaunch unitree_guide gazeboSim.launch
 ```
 
-Wait for the Go1 model and joint controllers to load. Gazebo displays the robot, but the locomotion executable must be started separately.
+Wait for the Go1 model and joint controllers to load. Gazebo displays the robot, but the locomotion executable must be started separately. An **rqt_plot** window opens automatically after approximately ten seconds to show the four foot-contact signals.
 
-For a simulation without the Gazebo window, add `gui:=false` to the launch command.
+To hide the Gazebo window, add `gui:=false` to the launch command. This does **not** disable the separate rqt window; the current launch still requires a graphical display for rqt.
 
 ### Terminal 2: keyboard controller
 
@@ -94,7 +96,7 @@ Keep this terminal focused when entering commands. Run only one locomotion contr
 
 1. Press `2` and wait for the robot to finish standing up.
 2. Press `4` for trot, `6` for canter, or `7` for gallop.
-3. Tap `w` to increase the forward command. Canter and gallop wait for a movement request, then uses a 0.4 s settling interval before activating its schedule.
+3. Tap `w` to increase the forward command. Canter and gallop wait for a movement request, then use a 0.4 s settling interval before activating their schedules.
 
 Keyboard commands accumulate; releasing a key does not reset the command. For canter, each `w` press adds approximately **0.02 m/s** to the target. Two taps request 0.04 m/s; fifteen taps from zero request 0.30 m/s. The controller ramps toward the requested value, and actual velocity may differ.
 
@@ -117,6 +119,46 @@ Keyboard commands accumulate; releasing a key does not reset the command. For ca
 
 To finish a session, request fixed stand or passive as appropriate, stop the controller with `Ctrl+C`, then stop the Gazebo launch with `Ctrl+C`. If the robot falls, restart the simulation and controller before another trial.
 
+## View foot contacts and forces in rqt
+
+The automatically opened plot displays **measured Gazebo contact states**, not the gait generator's commanded stance/swing phases:
+
+| Foot | Contact topic |
+|---|---|
+| Right front (FR) | `/contact/FR_foot_contact/state` |
+| Left front (FL) | `/contact/FL_foot_contact/state` |
+| Right hind (RR) | `/contact/RR_foot_contact/state` |
+| Left hind (RL) | `/contact/RL_foot_contact/state` |
+
+Each topic is a `std_msgs/Float64`: **1** means the foot sensor reports a collision contact; **0** means it reports none. The plugin does not filter these signals by force magnitude or debounce brief contacts. The sensor can report collisions with objects as well as the ground.
+
+To reopen the plot manually, run this in a sourced terminal:
+
+```bash
+rosrun rqt_plot rqt_plot \
+  /contact/FR_foot_contact/state/data \
+  /contact/FL_foot_contact/state/data \
+  /contact/RR_foot_contact/state/data \
+  /contact/RL_foot_contact/state/data
+```
+
+Compare the rising edges to inspect touchdown order. All four traces at zero indicate that no foot sensor reports contact at those samples; a brief gap in the GUI alone is not sufficient to establish a repeatable suspension phase. Plot sampling and contact chatter can obscure short events.
+
+The plugin also publishes `geometry_msgs/WrenchStamped` messages on `/visual/<foot>_foot_contact/the_force`. For example, plot the reported FR force components with:
+
+```bash
+rosrun rqt_plot rqt_plot \
+  /visual/FR_foot_contact/the_force/wrench/force/x \
+  /visual/FR_foot_contact/the_force/wrench/force/y \
+  /visual/FR_foot_contact/the_force/wrench/force/z
+```
+
+These are the plugin's reported contact-force components, not the controller's requested body wrench. To inspect a contact message directly:
+
+```bash
+rostopic echo -n 1 /contact/FR_foot_contact/state
+```
+
 ## View the running robot in RViz
 
 With Gazebo running, open another sourced terminal and run:
@@ -127,7 +169,7 @@ rviz
 
 Set **Fixed Frame** to the robot's body frame, `trunk`, and add **RobotModel** and **TF** displays. The Gazebo launch already publishes the robot description and joint transforms. This view shows the articulated robot relative to its body frame; use Gazebo to observe world motion and ground contact.
 
-The separate `go1_rviz.launch` in the description package publishes synthetic joint states for model inspection. Do not use it alongside the running simulation to visualize live joint feedback.
+The separate `go1_rviz.launch` in the description package publishes synthetic joint states for model inspection. 
 
 ## Troubleshooting
 
@@ -139,6 +181,9 @@ The separate `go1_rviz.launch` in the description package publishes synthetic jo
 | Keyboard input has no effect | Focus the controller terminal, not Gazebo. Select fixed stand before selecting a gait. |
 | `setProcessScheduler failed` | The process could not obtain real-time scheduling priority. This message alone does not terminate the controller. Check subsequent output and simulation feedback before diagnosing the shutdown. |
 | XML-RPC connection refused | Check that the Gazebo/ROS launch is still running and both terminals use the same `ROS_MASTER_URI`. |
+| `rqt_plot` cannot be found | Install `ros-noetic-rqt-plot` and source ROS Noetic in the launch terminal. |
+| The contact plot is empty | Check `rostopic list` for `/contact/` topics, rebuild the full workspace, and restart Gazebo to load the updated plugin. Use the `/data` fields in rqt. |
+| rqt reports a display/Qt error | Run from a graphical desktop or a correctly configured forwarded display. `gui:=false` hides Gazebo only. |
 | The robot falls during debugging | A controller breakpoint does not pause Gazebo physics. Pause physics separately before inspecting a stopped controller. |
 | VM slows down or runs low on space | Stop unused simulations, build with `-j1`, and check `df -h` and `free -h` before another build or test. |
 
@@ -161,6 +206,7 @@ Pausing also stops simulation time. Keyboard-driven state changes may not comple
 | [State_Canter.h](src/unitree_guide/unitree_guide/include/FSM/State_Canter.h) | Canter period, duty factor and leg offsets |
 | [main.cpp](src/unitree_guide/unitree_guide/src/main.cpp) | Default shared gait configuration, including the optional crawl setting |
 | [unitree_ros](src/unitree_ros/) | Robot models, Gazebo plugins and joint controllers |
+| [foot_contact_plugin.cc](src/unitree_ros/unitree_gazebo/plugin/foot_contact_plugin.cc) | Measured foot-contact states and reported contact forces |
 | [unitree_legged_msgs](src/unitree_legged_msgs/) | ROS command and feedback messages |
 
 Changing a source-level gait parameter requires rebuilding and restarting the controller. The active editor tab does not choose which gait runs.
